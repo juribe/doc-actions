@@ -1,0 +1,43 @@
+name: Upload documentation to github pages
+on:
+  push:
+    branches:
+      - main    # change to main if needed
+jobs:
+  build:
+    name: generate documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - name: install yard
+        run: gem install yard
+      - name: create documentation
+        run: yardoc person.rb
+      - name: upload artifact documentation
+        uses: actions/upload-pages-artifact@v1
+        with:
+          name: github-pages
+          path: doc
+  deploy:
+    name: put documentation in github pages
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
